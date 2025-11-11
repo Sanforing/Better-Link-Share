@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Links</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind to use Inter font -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              inter: ['Inter', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
+    <!-- Import Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Helper script for image error fallback -->
+    <script>
+      // Defined globally in <head> to be available for img onerror events
+      window.handleImgError = (e) => {
+          e.target.src = 'https://placehold.co/100x100/6b7280/ffffff?text=Img&font=inter';
+      };
+    </script>
+
+    <style>
+      /* CSS Variables for Theming. Will be set by JS. */
+      :root {
+        /* Default theme, will be overridden by Firebase data */
+        --bg-gradient-from: #e0e7ff;
+        --bg-gradient-via: #f3e8ff;
+        --bg-gradient-to: #fce7f3;
+        --text-color-primary: #111827;
+        --text-color-secondary: #4b5563;
+        --text-color-accent: #4f46e5;
+        --spotlight-button-bg: #22c55e;
+        --spotlight-button-hover-bg: #16a34a;
+        --spotlight-button-text-color: #ffffff;
+        --link-card-bg: rgba(255, 255, 255, 0.7);
+        --link-card-hover-bg: #ffffff;
+        --link-focus-ring: #6366f1;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .5; }
+      }
+      .loading-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      /* Loading state default */
+      body.loading #profile-pic,
+      body.loading #profile-name,
+      body.loading #profile-bio,
+      body.loading #links-container {
+        opacity: 0;
+      }
+    </style>
+</head>
+<body 
+    class="min-h-screen font-inter flex items-center justify-center p-4 transition-colors duration-500 loading"
+    style="background-image: linear-gradient(to bottom right, var(--bg-gradient-from), var(--bg-gradient-via), var(--bg-gradient-to)); color: var(--text-color-secondary);">
+
+    <!-- Main Card -->
+    <div class="w-full max-w-md bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-6 md:p-8">
+        
+        <!-- Profile Section -->
+        <div class="text-center">
+            <!-- Profile Picture -->
+            <img 
+                id="profile-pic"
+                src="https://placehold.co/128x128/9ca3af/ffffff?text=%20&font=inter" 
+                alt="Profile Picture" 
+                onerror="window.handleImgError(event)"
+                class="w-24 h-24 md:w-32 md:h-32 rounded-full mx-auto shadow-lg border-4 border-white transition-opacity duration-500"
+            >
+            
+            <!-- Name -->
+            <h1 id="profile-name" class="text-2xl md:text-3xl font-bold mt-4 h-9 bg-gray-200 rounded-md loading-pulse transition-opacity duration-500" style="color: var(--text-color-primary);"></h1>
+            
+            <!-- Bio -->
+            <p id="profile-bio" class="mt-2 text-sm md:text-base space-y-2 transition-opacity duration-500">
+                <span class="block h-4 bg-gray-200 rounded-md loading-pulse"></span>
+                <span class="block h-4 bg-gray-200 rounded-md loading-pulse" style="animation-delay: 0.1s;"></span>
+            </p>
+        </div>
+
+        <!-- === Featured Content Section === -->
+        <div id="spotlight-section" class="mt-8 border-b-2 border-gray-200 pb-8" style="display: none;">
+            <!-- Content is dynamically added and section is shown by JS -->
+            <h2 id="spotlight-heading" class="text-sm font-semibold text-center uppercase tracking-wider" style="color: var(--text-color-accent);"></h2>
+            <div class="aspect-video rounded-lg overflow-hidden mt-4 shadow-lg">
+                <img 
+                    id="spotlight-image"
+                    src="" 
+                    alt="Featured Content"
+                    onerror="window.handleImgError(event)"
+                    class="w-full h-full object-cover"
+                >
+            </div>
+            <h3 id="spotlight-title" class="text-xl font-bold mt-4" style="color: var(--text-color-primary);"></h3>
+            <p id="spotlight-description" class="text-sm mt-1"></p>
+            <a id="spotlight-link"
+               href="#" 
+               target="_blank" 
+               class="block font-bold py-3 px-5 rounded-lg shadow-md mt-4 text-center
+                      transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl"
+               style="background-color: var(--spotlight-button-bg); color: var(--spotlight-button-text-color);">
+                <span id="spotlight-button-text"></span>
+            </a>
+        </div>
+        <!-- === End of Spotlight Section === -->
+
+        <!-- Links Section (Now a container) -->
+        <div class="mt-8">
+            <h2 id="links-heading" class="text-sm font-semibold text-center uppercase tracking-wider mb-4 h-5 bg-gray-200 rounded-md loading-pulse" style="color: var(--text-color-secondary);"></h2>
+            <div id="links-container" class="space-y-4 transition-opacity duration-500">
+                
+                <!-- Mock Link Card 1 (Example of a loading state) -->
+                <div class="flex items-center bg-gray-200 p-3 rounded-lg loading-pulse space-x-4">
+                    <div class="w-16 h-16 rounded-md bg-gray-300"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+                        <div class="h-3 bg-gray-300 rounded w-1/2 md:block hidden"></div>
+                    </div>
+                </div>
+                <!-- Mock Link Card 2 (Example of a loading state) -->
+                <div class="flex items-center bg-gray-200 p-3 rounded-lg loading-pulse space-x-4" style="animation-delay: 0.2s;">
+                    <div class="w-16 h-16 rounded-md bg-gray-300"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-gray-300 rounded w-3/4"></div>
+                        <div class="h-3 bg-gray-300 rounded w-1/2 md:block hidden"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Social Icons (Removed) -->
+        <div id="social-links-container" class="hidden">
+            <!-- Social icons are removed from display -->
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8">
+            <p class="text-xs" style="color: var(--text-color-secondary);">
+                Powered by <a href="https://github.com/your-repo/FlexiLink" target="_blank" rel="noopener noreferrer" class="font-semibold" style="color: var(--text-color-accent);">FlexiLink</a>
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        // Import Firebase services
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, collection, query, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        //
+        // --- 🚀 SETUP GUIDE: HOW TO USE FLEXILINK 🚀 ---
+        //
+        // 1. Go to Firebase (firebase.google.com) and create a new project.
+        // 2. In your project, go to "Project Settings" (click the ⚙️ icon).
+        // 3. Scroll down to "Your apps" and click the Web icon (</>).
+        // 4. Register your app (just give it a name) and find the "Firebase SDK snippet".
+        // 5. Select the "Config" option.
+        // 6. Copy the `firebaseConfig` object (from `{` to `}`).
+        // 7. Paste it below, replacing the placeholder `YOUR_FIREBASE_CONFIG_HERE`.
+        //
+        const firebaseConfig = {
+            // ❗ PASTE YOUR FIREBASE CONFIG OBJECT HERE
+            // apiKey: "...",
+            // authDomain: "...",
+            // projectId: "...",
+            // storageBucket: "...",
+            // messagingSenderId: "...",
+            // appId: "..."
+        };
+
+        // 8. In Firebase, go to "Build" -> "Firestore Database" and create a database.
+        // 9. Start in "Production mode" (locked mode).
+        //
+        // 10. 🔒 Firestore Security Rules (REQUIRED FOR READS)
+        //     Go to the "Rules" tab in Firestore and paste this:
+        /*
+            rules_version = '2';
+            service cloud.firestore {
+              match /databases/{database}/documents {
+                // Allow anyone to read the config and links
+                match /config/page {
+                  allow read: if true;
+                }
+                match /links/{linkId} {
+                  allow read: if true;
+                }
+                // By default, writing is DISALLOWED.
+                // You must add/edit data from the Firebase Console.
+                allow write: if false;
+              }
+            }
+        */
+        //
+        // 11. 📝 Add Your Data
+        //     Go back to the "Data" tab in Firestore.
+        //
+        //     A) Create the Config Document:
+        //        - Start Collection: `config`
+        //        - Document ID: `page`
+        //        - Add a field: `profile` (Type: map)
+        //          - Inside `profile`, add fields like:
+        //            - `name` (string) -> "@yourname"
+        //            - `bio` (string) -> "My amazing bio"
+        //            - `profilePicUrl` (string) -> "https://..."
+        //            - `linksHeading` (string) -> "My Links"
+        //        - Add a field: `theme` (Type: map)
+        //          - Inside `theme`, add fields like:
+        //            - `--bg-gradient-from` (string) -> "#hexcode"
+        //            - `--text-color-primary` (string) -> "#hexcode"
+        //            - (Add any CSS variable you want to control)
+        //        - Add a field: `spotlight` (Type: map)
+        //          - Inside `spotlight`, add fields like:
+        //            - `heading` (string) -> "Latest Project"
+        //            - `title` (string) -> "My Awesome Game"
+        //            - `description` (string) -> "Check it out!"
+        //            - `imageUrl` (string) -> "https://..."
+        //            - `url` (string) -> "https://..."
+        //            - `buttonText` (string) -> "Play Now!"
+        //
+        //     B) Create the Links Collection:
+        //        - Start Collection: `links`
+        //        - Click "Auto-ID" for the first document.
+        //        - Add fields to this document:
+        //          - `title` (string) -> "My Portfolio"
+        //          - `description` (string) -> "See all my work."
+        //          - `imageUrl` (string) -> "https://..."
+        //          - `url` (string) -> "https://..."
+        //        - (Optional: Add an `order` (number) field if you want to sort)
+        //        - Add more documents to the 'links' collection for each link card.
+        //
+        // --- 🔥 THAT'S IT! Your page is live. ---
+
+
+        // --- !!! STOP EDITING HERE UNLESS YOU KNOW WHAT YOU ARE DOING !!! ---
+
+
+        // --- Helper: Image Error Fallback ---
+        // (This function is now defined in the <head>)
+
+        // --- Helper: Create Link Cards ---
+        const createLinkCard = (linkData) => {
+            const linkEl = document.createElement('a');
+            linkEl.href = linkData.url;
+            linkEl.target = "_blank";
+            linkEl.className = "flex items-center p-3 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl";
+            linkEl.style.backgroundColor = 'var(--link-card-bg)';
+            linkEl.style.color = 'var(--text-color-secondary)';
+            
+            linkEl.onmouseover = () => { linkEl.style.backgroundColor = 'var(--link-card-hover-bg)'; };
+            linkEl.onmouseout = () => { linkEl.style.backgroundColor = 'var(--link-card-bg)'; };
+            linkEl.onfocus = () => { linkEl.style.boxShadow = `0 0 0 2px var(--link-focus-ring)`; };
+            linkEl.onblur = () => { linkEl.style.boxShadow = '0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06)'; };
+
+            const imgEl = document.createElement('img');
+            imgEl.src = linkData.imageUrl || 'https://placehold.co/64x64/9ca3af/ffffff?text=Link&font=inter';
+            imgEl.alt = linkData.title;
+            imgEl.className = "w-16 h-16 rounded-md object-cover shadow-sm flex-shrink-0";
+            imgEl.onerror = handleImgError;
+            linkEl.appendChild(imgEl);
+
+            const textContainer = document.createElement('div');
+            textContainer.className = "ml-4 flex-1 min-w-0";
+            
+            const titleEl = document.createElement('h4');
+            titleEl.className = "font-semibold truncate";
+            titleEl.style.color = 'var(--text-color-primary)';
+            titleEl.textContent = linkData.title;
+            textContainer.appendChild(titleEl);
+
+            if (linkData.description) {
+                const descEl = document.createElement('p');
+                descEl.className = "text-sm hidden md:block truncate";
+                descEl.textContent = linkData.description;
+                textContainer.appendChild(descEl);
+            }
+            linkEl.appendChild(textContainer);
+
+            const chevronContainer = document.createElement('div');
+            chevronContainer.className = "text-gray-400 ml-2";
+            chevronContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>`;
+            linkEl.appendChild(chevronContainer);
+            
+            return linkEl;
+        };
+
+        // --- Render Theme Function ---
+        const renderTheme = (theme) => {
+            if (!theme) return;
+            for (const [key, value] of Object.entries(theme)) {
+                if (key.startsWith('--')) { // Only set CSS variables
+                    document.documentElement.style.setProperty(key, value);
+                }
+            }
+        };
+
+        // --- Main Render Function ---
+        const renderPage = (profile, spotlight, links) => {
+            // 1. Remove loading state
+            document.body.classList.remove('loading');
+
+            // 2. Update Profile
+            const profilePicEl = document.getElementById('profile-pic');
+            const profileNameEl = document.getElementById('profile-name');
+            const profileBioEl = document.getElementById('profile-bio');
+            const linksHeadingEl = document.getElementById('links-heading');
+
+            if (profile) {
+                if (profile.profilePicUrl) {
+                    profilePicEl.src = profile.profilePicUrl;
+                } else {
+                    profilePicEl.src = 'https://placehold.co/128x128/9ca3af/ffffff?text=...&font=inter';
+                }
+                profileNameEl.textContent = profile.name || '';
+                profileBioEl.textContent = profile.bio || '';
+                linksHeadingEl.textContent = profile.linksHeading || 'Links';
+                
+                // Clear loading styles
+                profileNameEl.classList.remove('h-9', 'bg-gray-200', 'loading-pulse');
+                profileBioEl.innerHTML = profile.bio || ''; // Replace loading spans
+                linksHeadingEl.classList.remove('h-5', 'bg-gray-200', 'loading-pulse');
+                
+                profilePicEl.style.opacity = 1;
+                profileNameEl.style.opacity = 1;
+                profileBioEl.style.opacity = 1;
+                linksHeadingEl.style.opacity = 1;
+
+            }
+
+            // 3. Update Spotlight
+            const spotlightSection = document.getElementById('spotlight-section');
+            if (spotlight && spotlight.title) {
+                document.getElementById('spotlight-heading').textContent = spotlight.heading;
+                document.getElementById('spotlight-image').src = spotlight.imageUrl;
+                document.getElementById('spotlight-title').textContent = spotlight.title;
+                document.getElementById('spotlight-description').textContent = spotlight.description;
+                const spotlightLink = document.getElementById('spotlight-link');
+                spotlightLink.href = spotlight.url;
+                document.getElementById('spotlight-button-text').textContent = spotlight.buttonText;
+                
+                spotlightLink.onmouseover = () => { spotlightLink.style.backgroundColor = 'var(--spotlight-button-hover-bg)'; };
+                spotlightLink.onmouseout = () => { spotlightLink.style.backgroundColor = 'var(--spotlight-button-bg)'; };
+
+                spotlightSection.style.display = 'block'; // Show the section
+            } else {
+                spotlightSection.style.display = 'none'; // Hide if no spotlight data
+            }
+
+            // 4. Update Links
+            const linksContainer = document.getElementById('links-container');
+            linksContainer.innerHTML = ''; // Clear loading placeholders
+            linksContainer.style.opacity = 1;
+            
+            if (links && links.length > 0) {
+                links.forEach(linkData => {
+                    const card = createLinkCard(linkData);
+                    linksContainer.appendChild(card);
+                });
+            } else {
+                linksContainer.innerHTML = `<p class="text-center text-gray-500 text-sm">No links to show right now.</p>`;
+            }
+        };
+
+        // --- Main App Logic ---
+        let appState = {
+            profile: null,
+            spotlight: null,
+            theme: null,
+            links: []
+        };
+        
+        const main = async () => {
+            // 0. Check for Firebase Config
+            if (!firebaseConfig.apiKey) {
+                console.error("Firebase config is missing. Please paste your config object in links.html.");
+                document.body.innerHTML = `<div class="w-full h-screen flex items-center justify-center text-center p-4" style="background: var(--bg-gradient-from);">
+                    <div class="bg-white/80 backdrop-blur-lg p-6 md:p-8 rounded-lg shadow-lg max-w-md">
+                        <h1 class="text-2xl font-bold text-red-600">Configuration Error</h1>
+                        <p class="mt-4 text-gray-700">Your Firebase configuration is missing from <code>links.html</code>.</p>
+                        <p class="mt-2 text-gray-500 text-sm">Please follow the setup guide comments in the file to add your <code>firebaseConfig</code> object.</p>
+                    </div>
+                </div>`;
+                return; // Stop execution
+            }
+
+            // 1. Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            // setLogLevel('Debug'); // Uncomment for debugging
+
+            // 2. Sign In Anonymously
+            try {
+                await signInAnonymously(auth);
+                console.log("Signed in anonymously");
+            } catch (e) {
+                console.error("Error signing in anonymously:", e);
+                // We can still try to render public data
+            }
+
+            // 3. Set up Real-time Listeners
+            
+            // Listen to the main config document
+            const configDocRef = doc(db, "config", "page");
+            onSnapshot(configDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    appState.profile = data.profile || {};
+                    appState.spotlight = data.spotlight || {};
+                    if (data.theme) {
+                        appState.theme = data.theme;
+                        renderTheme(appState.theme); // Apply theme immediately
+                    }
+                    renderPage(appState.profile, appState.spotlight, appState.links);
+                } else {
+                    console.warn("Config document 'config/page' not found! Using defaults.");
+                    renderPage({}, {}, appState.links); // Render with what we have
+                }
+            }, (error) => {
+                console.error("Error listening to config:", error);
+            });
+
+            // Listen to the 'links' collection
+            const linksQuery = query(collection(db, "links"));
+            onSnapshot(linksQuery, (querySnapshot) => {
+                appState.links = [];
+                querySnapshot.forEach((doc) => {
+                    appState.links.push(doc.data());
+                });
+                // Note: To order links, add an 'order' (number) field to your docs
+                // in Firebase and add `.orderBy("order", "asc")` to the query above.
+                // e.g., const linksQuery = query(collection(db, "links"), orderBy("order", "asc"));
+                // This requires creating an index in Firebase (the error log will guide you).
+                
+                renderPage(appState.profile, appState.spotlight, appState.links);
+            }, (error) => {
+                console.error("Error listening to links:", error);
+            });
+        };
+
+        // --- Run on Page Load ---
+        document.addEventListener('DOMContentLoaded', main);
+
+    </script>
+
+</body>
+</html>

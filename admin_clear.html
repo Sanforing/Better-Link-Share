@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkStalk Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --admin-accent: #4f46e5; }
+        .tab-button.active { background-color: var(--admin-accent); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        input[type="text"], input[type="url"], input[type="number"], textarea, select {
+            @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500;
+        }
+        label { @apply block text-sm font-medium text-gray-700 mb-1; }
+        .btn-primary { @apply w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500; }
+        .btn-secondary { @apply w-full justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500; }
+        .btn-danger { @apply py-1 px-3 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700; }
+        .form-section { @apply p-6 bg-white rounded-lg shadow space-y-4; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- View 1: Login Screen (Default) -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-white rounded-lg shadow-xl p-6 md:p-8 space-y-6">
+            <h2 class="text-3xl font-bold text-center text-gray-900">LinkStalk Admin</h2>
+            
+            <div id="login-error" class="hidden p-3 bg-red-100 text-red-700 rounded-md"></div>
+
+            <!-- Login Button -->
+            <div id="login-button-container" class="text-center space-y-4">
+                <p class="text-gray-600">Please sign in with Google. This will be your admin account.</p>
+                <button id="login-button" class="btn-primary flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.223,0-9.64-3.657-11.303-8.472l-6.571,4.819C9.656,39.663,16.318,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.243,4.168-4.089,5.592l6.19,5.238C39.733,34.61,44,28.761,44,20C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+                    Sign In with Google
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View 2: Admin Dashboard (Hidden by default) -->
+    <div id="admin-dashboard" class="hidden p-4 md:p-8 max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">LinkStalk Admin</h1>
+            <div class="text-right mt-4 md:mt-0">
+                <p class="text-sm text-gray-600">Logged in as: <strong id="user-email">...</strong></p>
+                <p class="text-xs text-gray-500 break-all">User ID: <code id="user-uid" class="bg-gray-200 px-1 rounded">...</code></p>
+                <button id="logout-button" class="text-sm text-indigo-600 hover:text-indigo-900 font-medium mt-2">Sign Out</button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button data-tab="tab-profile" class="tab-button active whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Profile & Spotlight</button>
+                    <button data-tab="tab-theme" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Theme & Colors</button>
+                    <button data-tab="tab-links" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Manage Links</button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Tab Content: Profile & Spotlight -->
+        <div id="tab-profile" class="tab-content active grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Profile Form -->
+            <form id="profile-form" class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900">Profile</h3>
+                <div>
+                    <label for="profile-name">Name (e.g., @yourname)</label>
+                    <input type="text" id="profile-name" name="name" placeholder="@yourname">
+                </div>
+                <div>
+                    <label for="profile-bio">Bio</label>
+                    <textarea id="profile-bio" name="bio" rows="3" placeholder="Indie game developer..."></textarea>
+                </div>
+                <div>
+                    <label for="profile-pic-url">Profile Picture URL</label>
+                    <input type="url" id="profile-pic-url" name="profilePicUrl" placeholder="https://...">
+                </div>
+                <div>
+                    <label for="profile-links-heading">Links Section Heading</label>
+                    <input type="text" id="profile-links-heading" name="linksHeading" placeholder="My Games">
+                </div>
+                <button type="submit" class="btn-primary">Save Profile</button>
+            </form>
+            
+            <!-- Spotlight Form -->
+            <form id="spotlight-form" class="form-section">
+                <h3 class="text-xl font-semibold text-gray-900">Spotlight (Featured Content)</h3>
+                <p class="text-sm text-gray-500">To hide the spotlight section, just clear the "Title" field and save.</p>
+                <div>
+                    <label for="spotlight-heading">Heading (e.g., "Latest Game")</label>
+                    <input type="text" id="spotlight-heading" name="heading" placeholder="Latest Game">
+                </div>
+                <div>
+                    <label for="spotlight-title">Title</label>
+                    <input type="text" id="spotlight-title" name="title" placeholder="Pixel Jumper">
+                </div>
+                <div>
+                    <label for="spotlight-description">Description</label>
+                    <textarea id="spotlight-description" name="description" rows="2" placeholder="My new 2D platformer..."></textarea>
+                </div>
+                <div>
+                    <label for="spotlight-image-url">Image/GIF URL</label>
+                    <input type="url" id="spotlight-image-url" name="imageUrl" placeholder="https://...">
+                </div>
+                <div>
+                    <label for="spotlight-url">Link URL</label>
+                    <input type="url" id="spotlight-url" name="url" placeholder="https://...">
+                </div>
+                <div>
+                    <label for="spotlight-button-text">Button Text</label>
+                    <input type="text" id="spotlight-button-text" name="buttonText" placeholder="PLAY NOW!">
+                </div>
+                <button type="submit" class="btn-primary">Save Spotlight</button>
+            </form>
+        </div>
+
+        <!-- Tab Content: Theme -->
+        <div id="tab-theme" class="tab-content">
+            <form id="theme-form" class="form-section max-w-lg mx-auto">
+                <h3 class="text-xl font-semibold text-gray-900">Page Theme</h3>
+                <p class="text-sm text-gray-500">Enter CSS hex codes (e.g., `#ffffff`) or valid color names. Be careful!</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- This list can be expanded by adding more inputs with 'data-css-var' attributes -->
+                    <div>
+                        <label for="theme-bg-from">Background Gradient From</label>
+                        <input type="text" id="theme-bg-from" data-css-var="--bg-gradient-from" placeholder="#e0e7ff">
+                    </div>
+                    <div>
+                        <label for="theme-bg-via">Background Gradient Via</label>
+                        <input type="text" id="theme-bg-via" data-css-var="--bg-gradient-via" placeholder="#f3e8ff">
+                    </div>
+                    <div>
+                        <label for="theme-bg-to">Background Gradient To</label>
+                        <input type="text" id="theme-bg-to" data-css-var="--bg-gradient-to" placeholder="#fce7f3">
+                    </div>
+                    <div>
+                        <label for="theme-text-primary">Primary Text (Headings)</label>
+                        <input type="text" id="theme-text-primary" data-css-var="--text-color-primary" placeholder="#111827">
+                    </div>
+                    <div>
+                        <label for="theme-text-secondary">Secondary Text (Body)</label>
+                        <input type="text" id="theme-text-secondary" data-css-var="--text-color-secondary" placeholder="#4b5563">
+                    </div>
+                    <div>
+                        <label for="theme-text-accent">Accent Text (Headings)</label>
+                        <input type="text" id="theme-text-accent" data-css-var="--text-color-accent" placeholder="#4f46e5">
+                    </div>
+                    <div>
+                        <label for="theme-spotlight-btn-bg">Spotlight Button BG</label>
+                        <input type="text" id="theme-spotlight-btn-bg" data-css-var="--spotlight-button-bg" placeholder="#22c55e">
+                    </div>
+                    <div>
+                        <label for="theme-spotlight-btn-hover">Spotlight Button Hover BG</label>
+                        <input type="text" id="theme-spotlight-btn-hover" data-css-var="--spotlight-button-hover-bg" placeholder="#16a34a">
+                    </div>
+                    <div>
+                        <label for="theme-spotlight-btn-text">Spotlight Button Text</label>
+                        <input type="text" id="theme-spotlight-btn-text" data-css-var="--spotlight-button-text-color" placeholder="#ffffff">
+                    </div>
+                     <div>
+                        <label for="theme-link-card-bg">Link Card BG (use rgba for opacity)</label>
+                        <input type="text" id="theme-link-card-bg" data-css-var="--link-card-bg" placeholder="rgba(255, 255, 255, 0.7)">
+                    </div>
+                    <div>
+                        <label for="theme-link-card-hover-bg">Link Card Hover BG</label>
+                        <input type="text" id="theme-link-card-hover-bg" data-css-var="--link-card-hover-bg" placeholder="#ffffff">
+                    </div>
+                     <div>
+                        <label for="theme-link-focus-ring">Link Focus Ring</label>
+                        <input type="text" id="theme-link-focus-ring" data-css-var="--link-focus-ring" placeholder="#6366f1">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary mt-6">Save Theme</button>
+            </form>
+        </div>
+
+        <!-- Tab Content: Manage Links -->
+        <div id="tab-links" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Add/Edit Link Form -->
+            <form id="link-form" class="form-section lg:col-span-1">
+                <h3 class="text-xl font-semibold text-gray-900" id="link-form-title">Add New Link</h3>
+                <input type="hidden" id="link-id" name="id"> <!-- Used for editing -->
+                <div>
+                    <label for="link-title">Title</label>
+                    <input type="text" id="link-title" name="title" placeholder="My Portfolio" required>
+                </div>
+                <div>
+                    <label for="link-description">Description</label>
+                    <textarea id="link-description" name="description" rows="2" placeholder="Check out my work..."></textarea>
+                </div>
+                <div>
+                    <label for="link-image-url">Image URL</label>
+                    <input type="url" id="link-image-url" name="imageUrl" placeholder="https://...">
+                </div>
+                <div>
+                    <label for="link-url">Link URL</label>
+                    <input type="url" id="link-url" name="url" placeholder="https://..." required>
+                </div>
+                <div>
+                    <label for="link-order">Order (e.g., 1, 2, 3)</label>
+                    <input type="number" id="link-order" name="order" placeholder="1">
+                </div>
+                <div class="flex gap-4">
+                    <button type="submit" class="btn-primary">Save Link</button>
+                    <button type="button" id="link-form-cancel" class="btn-secondary hidden">Cancel</button>
+                </div>
+            </form>
+
+            <!-- Current Links List -->
+            <div class="lg:col-span-2 space-y-4">
+                 <h3 class="text-xl font-semibold text-gray-900">Current Links</h3>
+                 <div id="links-list" class="space-y-4">
+                    <p class="text-gray-500">Loading links...</p>
+                    <!-- Links will be dynamically added here -->
+                 </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc,
+            onSnapshot, 
+            collection, 
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            query,
+            orderBy
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        //
+        // --- 🚀 SETUP GUIDE: HOW TO USE LINKSTALK (ADMIN) 🚀 ---
+        //
+        // 1. Go to Firebase (firebase.google.com) and create a new project.
+        // 2. In your project, go to "Authentication" > "Sign-in method" and ENABLE "Google".
+        // 3. Go to "Firestore Database" and create a database.
+        // 4. Go to the "Rules" tab and paste the contents of `firestore.rules`.
+        // 5. In "Project Settings", copy the `firebaseConfig` object and paste it below.
+        //
+        const firebaseConfig = {
+            // ❗ STEP 5: PASTE YOUR FIREBASE CONFIG OBJECT HERE
+            // apiKey: "...",
+            // authDomain: "...",
+            // projectId: "...",
+        };
+        //
+        // --- 🔥 THAT'S IT! You can now run this admin.html file. ---
+
+
+        // --- !!! STOP EDITING HERE !!! ---
+
+        // Global state
+        let db, auth, currentUid;
+
+        const loginScreen = document.getElementById('login-screen');
+        const adminDashboard = document.getElementById('admin-dashboard');
+        const loginButton = document.getElementById('login-button');
+        const logoutButton = document.getElementById('logout-button');
+        const loginError = document.getElementById('login-error');
+
+        // --- 1. Config Check & Initialization ---
+
+        function initializeAppWithConfig(config) {
+            try {
+                const app = initializeApp(config);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setupAuthObserver();
+            } catch (e) {
+                console.error("Error initializing Firebase:", e);
+                showLoginError("Invalid Firebase Config. Please check the object in `admin.html`.");
+            }
+        }
+
+        function showLoginError(message) {
+            loginError.textContent = message;
+            loginError.style.display = 'block';
+            loginButton.disabled = true;
+            loginButton.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
+        // --- 2. Auth Handling ---
+
+        loginButton.addEventListener('click', () => {
+            signInWithPopup(auth, new GoogleAuthProvider()).catch(e => {
+                 console.error("Login failed:", e)
+                 showLoginError(`Login failed: ${e.message}`);
+            });
+        });
+
+        logoutButton.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        function setupAuthObserver() {
+            onAuthStateChanged(auth, user => {
+                if (user) {
+                    // User is signed in
+                    currentUid = user.uid;
+                    document.getElementById('user-email').textContent = user.email;
+                    document.getElementById('user-uid').textContent = user.uid;
+                    loginScreen.style.display = 'none';
+                    adminDashboard.style.display = 'block';
+                    
+                    // Load all data
+                    loadConfigData(user.uid);
+                    loadLinksData(user.uid);
+                } else {
+                    // User is signed out
+                    currentUid = null;
+                    loginScreen.style.display = 'flex';
+                    adminDashboard.style.display = 'none';
+                }
+            });
+        }
+
+        // --- 3. Data Loading ---
+
+        function getConfigDocRef(uid) {
+            return doc(db, "users", uid, "config", "page");
+        }
+        function getLinksColRef(uid) {
+            return collection(db, "users", uid, "links");
+        }
+
+        // Load Profile, Spotlight, and Theme
+        function loadConfigData(uid) {
+            const configDoc = getConfigDocRef(uid);
+            onSnapshot(configDoc, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // Populate Profile Form
+                    if (data.profile) {
+                        document.getElementById('profile-name').value = data.profile.name || '';
+                        document.getElementById('profile-bio').value = data.profile.bio || '';
+                        document.getElementById('profile-pic-url').value = data.profile.profilePicUrl || '';
+                        document.getElementById('profile-links-heading').value = data.profile.linksHeading || '';
+                    }
+                    
+                    // Populate Spotlight Form
+                    if (data.spotlight) {
+                        document.getElementById('spotlight-heading').value = data.spotlight.heading || '';
+                        document.getElementById('spotlight-title').value = data.spotlight.title || '';
+                        document.getElementById('spotlight-description').value = data.spotlight.description || '';
+                        document.getElementById('spotlight-image-url').value = data.spotlight.imageUrl || '';
+                        document.getElementById('spotlight-url').value = data.spotlight.url || '';
+                        document.getElementById('spotlight-button-text').value = data.spotlight.buttonText || '';
+                    }
+
+                    // Populate Theme Form
+                    if (data.theme) {
+                        document.querySelectorAll('#theme-form input[data-css-var]').forEach(input => {
+                            const varName = input.dataset.cssVar;
+                            input.value = data.theme[varName] || '';
+                        });
+                    }
+                } else {
+                    console.log("No config document found. Saving will create one.");
+                }
+            });
+        }
+
+        // Load Links
+        const linksListEl = document.getElementById('links-list');
+        function loadLinksData(uid) {
+            const q = query(getLinksColRef(uid), orderBy("order", "asc"));
+            onSnapshot(q, (snapshot) => {
+                linksListEl.innerHTML = '';
+                if (snapshot.empty) {
+                    linksListEl.innerHTML = '<p class="text-gray-500">No links found. Add one using the form!</p>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const link = doc.data();
+                    const linkId = doc.id;
+                    const el = document.createElement('div');
+                    el.className = "flex items-center justify-between bg-white p-3 rounded-md shadow";
+                    el.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <img src="${link.imageUrl || 'https://placehold.co/64x64/eee/999?text=Img'}" alt="" class="w-10 h-10 rounded-md object-cover">
+                            <div>
+                                <p class="font-semibold text-gray-900">${link.title} <span class="text-sm text-gray-400">(${link.order || 'N/A'})</span></p>
+                                <p class="text-xs text-gray-500 truncate max-w-xs">${link.description || 'No description'}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button data-id="${linkId}" class="btn-edit text-sm font-medium text-indigo-600 hover:text-indigo-900">Edit</button>
+                            <button data-id="${linkId}" class="btn-delete btn-danger">Delete</button>
+                        </div>
+                    `;
+                    linksListEl.appendChild(el);
+                });
+
+                // Add event listeners for new buttons
+                document.querySelectorAll('.btn-edit').forEach(btn => btn.addEventListener('click', handleEditLink));
+                document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', handleDeleteLink));
+            });
+        }
+
+        // --- 4. Data Saving ---
+
+        // Save Profile
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const profileData = Object.fromEntries(formData.entries());
+            try {
+                await setDoc(getConfigDocRef(currentUid), { profile: profileData }, { merge: true });
+                alert("Profile saved!");
+            } catch (e) {
+                console.error(e);
+                alert("Error saving profile.");
+            }
+        });
+        
+        // Save Spotlight
+        document.getElementById('spotlight-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const spotlightData = Object.fromEntries(formData.entries());
+            try {
+                await setDoc(getConfigDocRef(currentUid), { spotlight: spotlightData }, { merge: true });
+                alert("Spotlight saved!");
+            } catch (e) {
+                console.error(e);
+                alert("Error saving spotlight.");
+            }
+        });
+
+        // Save Theme
+        document.getElementById('theme-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const themeData = {};
+            document.querySelectorAll('#theme-form input[data-css-var]').forEach(input => {
+                if (input.value) { // Only save non-empty values
+                    themeData[input.dataset.cssVar] = input.value;
+                }
+            });
+            try {
+                await setDoc(getConfigDocRef(currentUid), { theme: themeData }, { merge: true });
+                alert("Theme saved!");
+            } catch (e) {
+                console.error(e);
+                alert("Error saving theme.");
+            }
+        });
+
+        // Save (Add/Update) Link
+        const linkForm = document.getElementById('link-form');
+        const linkFormTitle = document.getElementById('link-form-title');
+        const linkIdInput = document.getElementById('link-id');
+        const cancelBtn = document.getElementById('link-form-cancel');
+
+        linkForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const linkId = linkIdInput.value;
+            const formData = new FormData(e.target);
+            const linkData = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                imageUrl: formData.get('imageUrl'),
+                url: formData.get('url'),
+                order: Number(formData.get('order') || 0)
+            };
+            
+            try {
+                if (linkId) {
+                    // Update existing link
+                    const linkDocRef = doc(db, "users", currentUid, "links", linkId);
+                    await updateDoc(linkDocRef, linkData);
+                    alert("Link updated!");
+                } else {
+                    // Add new link
+                    await addDoc(getLinksColRef(currentUid), linkData);
+                    alert("Link added!");
+                }
+                resetLinkForm();
+            } catch (e) {
+                console.error(e);
+                alert("Error saving link.");
+            }
+        });
+        
+        function resetLinkForm() {
+            linkForm.reset();
+            linkIdInput.value = '';
+            linkFormTitle.textContent = "Add New Link";
+            cancelBtn.style.display = 'none';
+        }
+        
+        cancelBtn.addEventListener('click', resetLinkForm);
+
+        // --- 5. Data Deleting / Editing Prep ---
+
+        async function handleEditLink(e) {
+            const linkId = e.target.dataset.id;
+            const linkDocRef = doc(db, "users", currentUid, "links", linkId);
+            const docSnap = await getDoc(linkDocRef);
+            if (!docSnap.exists()) return;
+            
+            const link = docSnap.data();
+            linkIdInput.value = linkId;
+            document.getElementById('link-title').value = link.title || '';
+            document.getElementById('link-description').value = link.description || '';
+            document.getElementById('link-image-url').value = link.imageUrl || '';
+            document.getElementById('link-url').value = link.url || '';
+            document.getElementById('link-order').value = link.order || 0;
+
+            linkFormTitle.textContent = "Edit Link";
+            cancelBtn.style.display = 'block';
+            window.scrollTo(0, 0); // Scroll to top
+        }
+        
+        async function handleDeleteLink(e) {
+            const linkId = e.target.dataset.id;
+            if (!confirm("Are you sure you want to delete this link?")) return;
+            
+            try {
+                const linkDocRef = doc(db, "users", currentUid, "links", linkId);
+                await deleteDoc(linkDocRef);
+                alert("Link deleted.");
+            } catch (e) {
+                console.error(e);
+                alert("Error deleting link.");
+            }
+        }
+
+
+        // --- 6. Tabbed Navigation ---
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(button.dataset.tab).classList.add('active');
+            });
+        });
+
+
+        // --- 7. Initial Load ---
+        if (firebaseConfig && firebaseConfig.apiKey) {
+            initializeAppWithConfig(firebaseConfig);
+        } else {
+            showLoginError("Firebase config is missing. Please paste it into `admin.html`.");
+        }
+        
+    </script>
+</body>
+</html>
