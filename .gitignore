@@ -1,0 +1,22 @@
+# Generated files with Firebase config
+# These contain your personal Firebase credentials and should NOT be committed
+admin.html
+betterlinkshare.html
+
+# Generated security rules with your email
+firestore.rules
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*

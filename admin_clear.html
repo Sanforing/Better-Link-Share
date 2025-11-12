@@ -3,226 +3,736 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinkStalk Admin Panel</title>
+    <title>BetterLinkShare Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --admin-accent: #4f46e5; }
-        .tab-button.active { background-color: var(--admin-accent); color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        input[type="text"], input[type="url"], input[type="number"], textarea, select {
-            @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500;
+        :root { 
+            --admin-accent: #4f46e5;
+            --admin-accent-hover: #4338ca;
+            --success-bg: #d1fae5;
+            --success-text: #065f46;
+            --error-bg: #fee2e2;
+            --error-text: #991b1b;
         }
-        label { @apply block text-sm font-medium text-gray-700 mb-1; }
-        .btn-primary { @apply w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500; }
-        .btn-secondary { @apply w-full justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500; }
-        .btn-danger { @apply py-1 px-3 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700; }
-        .form-section { @apply p-6 bg-white rounded-lg shadow space-y-4; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        /* Tab Navigation */
+        .tab-button { 
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-button.active { 
+            background-color: transparent;
+            color: var(--admin-accent); 
+            border-bottom-color: var(--admin-accent);
+            font-weight: 600;
+        }
+        .tab-button:hover:not(.active) {
+            border-bottom-color: #e5e7eb;
+        }
+        
+        .tab-content { 
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        .tab-content.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Form Elements */
+        input[type="text"], 
+        input[type="url"], 
+        input[type="number"], 
+        textarea, 
+        select {
+            @apply w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm 
+                   focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 
+                   transition-all duration-200;
+            font-size: 15px;
+        }
+        
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        input[type="number"]:focus,
+        textarea:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+        }
+        
+        label { 
+            @apply block text-sm font-semibold text-gray-700 mb-2;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Buttons */
+        .btn-primary { 
+            @apply w-full justify-center py-3 px-6 border border-transparent rounded-lg 
+                   shadow-md text-base font-semibold text-white bg-indigo-600 
+                   hover:bg-indigo-700 focus:outline-none focus:ring-2 
+                   focus:ring-offset-2 focus:ring-indigo-500 
+                   transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg;
+        }
+        
+        .btn-secondary { 
+            @apply w-full justify-center py-3 px-6 border-2 border-gray-300 rounded-lg 
+                   shadow-sm text-base font-semibold text-gray-700 bg-white 
+                   hover:bg-gray-50 hover:border-gray-400 focus:outline-none 
+                   focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+                   transition-all duration-200;
+        }
+        
+        .btn-danger { 
+            @apply py-2 px-4 border border-transparent rounded-lg text-sm font-semibold 
+                   text-white bg-red-600 hover:bg-red-700 shadow-sm hover:shadow-md
+                   transition-all duration-200 transform hover:-translate-y-0.5;
+        }
+        
+        .btn-edit {
+            @apply py-2 px-4 border border-transparent rounded-lg text-sm font-semibold 
+                   text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50
+                   transition-all duration-200;
+        }
+        
+        /* Sections */
+        .form-section { 
+            @apply p-8 bg-white rounded-xl shadow-md border border-gray-100;
+            transition: all 0.3s ease;
+        }
+        
+        .form-section:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-section h3 {
+            @apply text-2xl font-bold text-gray-900 mb-2;
+        }
+        
+        .form-section > p {
+            @apply text-sm text-gray-500 mb-6;
+        }
+        
+        .form-section > div {
+            @apply mb-5;
+        }
+        
+        .form-section > div:last-of-type {
+            @apply mb-6;
+        }
+        
+        /* Alert/Toast Messages */
+        .alert {
+            @apply rounded-lg p-4 mb-4 flex items-start gap-3 shadow-sm;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .alert-success {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            border: 1px solid #6ee7b7;
+        }
+        
+        .alert-error {
+            background-color: var(--error-bg);
+            color: var(--error-text);
+            border: 1px solid #fca5a5;
+        }
+        
+        /* Link Cards in List */
+        .link-card {
+            @apply flex items-center justify-between bg-white p-4 rounded-xl shadow-sm 
+                   border border-gray-200 hover:shadow-md hover:border-indigo-200
+                   transition-all duration-200;
+        }
+        
+        .link-card img {
+            @apply w-14 h-14 rounded-lg object-cover border-2 border-gray-100;
+        }
+        
+        /* Color Input Preview */
+        .color-preview-box {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            border: 2px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .color-picker {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .color-picker:hover {
+            border-color: #4f46e5;
+            transform: scale(1.05);
+        }
+        
+        .color-input-group {
+            position: relative;
+        }
+        
+        /* Header */
+        .admin-header {
+            @apply bg-white shadow-sm border-b border-gray-200 -mx-4 md:-mx-8 px-4 md:px-8 py-5 mb-8 sticky top-0 z-10;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        
+        /* Responsive helpers */
+        @media (max-width: 768px) {
+            .form-section {
+                @apply p-6;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
     <!-- View 1: Login Screen (Default) -->
-    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="w-full max-w-sm bg-white rounded-lg shadow-xl p-6 md:p-8 space-y-6">
-            <h2 class="text-3xl font-bold text-center text-gray-900">LinkStalk Admin</h2>
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 md:p-10 space-y-8">
+            <div class="text-center">
+                <div class="inline-block p-3 bg-indigo-100 rounded-full mb-4">
+                    <svg class="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">BetterLinkShare</h2>
+                <p class="text-gray-500 text-sm">Admin Panel</p>
+            </div>
             
-            <div id="login-error" class="hidden p-3 bg-red-100 text-red-700 rounded-md"></div>
+            <div id="login-error" class="hidden"></div>
 
             <!-- Login Button -->
-            <div id="login-button-container" class="text-center space-y-4">
-                <p class="text-gray-600">Please sign in with Google. This will be your admin account.</p>
-                <button id="login-button" class="btn-primary flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.223,0-9.64-3.657-11.303-8.472l-6.571,4.819C9.656,39.663,16.318,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.243,4.168-4.089,5.592l6.19,5.238C39.733,34.61,44,28.761,44,20C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+            <div id="login-button-container" class="space-y-4">
+                <p class="text-gray-600 text-center text-sm">Sign in with your Google account to manage your link page.</p>
+                <button id="login-button" class="btn-primary flex items-center justify-center gap-3">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.223,0-9.64-3.657-11.303-8.472l-6.571,4.819C9.656,39.663,16.318,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.243,4.168-4.089,5.592l6.19,5.238C39.733,34.61,44,28.761,44,20C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
                     Sign In with Google
                 </button>
+                <p class="text-xs text-gray-400 text-center">Secure authentication powered by Google</p>
             </div>
         </div>
     </div>
 
     <!-- View 2: Admin Dashboard (Hidden by default) -->
-    <div id="admin-dashboard" class="hidden p-4 md:p-8 max-w-6xl mx-auto">
+    <div id="admin-dashboard" class="hidden min-h-screen bg-gray-50">
         <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">LinkStalk Admin</h1>
-            <div class="text-right mt-4 md:mt-0">
-                <p class="text-sm text-gray-600">Logged in as: <strong id="user-email">...</strong></p>
-                <p class="text-xs text-gray-500 break-all">User ID: <code id="user-uid" class="bg-gray-200 px-1 rounded">...</code></p>
-                <button id="logout-button" class="text-sm text-indigo-600 hover:text-indigo-900 font-medium mt-2">Sign Out</button>
+        <div class="admin-header">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-indigo-100 rounded-lg">
+                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">BetterLinkShare</h1>
+                        <p class="text-xs text-gray-500">Admin Panel</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <p class="text-sm text-gray-600">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                            </svg>
+                            <strong id="user-email">...</strong>
+                        </p>
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            UID: <code id="user-uid" class="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">...</code>
+                        </p>
+                    </div>
+                    <button id="logout-button" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-all duration-200">
+                        Sign Out
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Tab Navigation -->
-        <div class="mb-6">
-            <div class="border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button data-tab="tab-profile" class="tab-button active whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Profile & Spotlight</button>
-                    <button data-tab="tab-theme" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Theme & Colors</button>
-                    <button data-tab="tab-links" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Manage Links</button>
-                </nav>
+        <div class="max-w-7xl mx-auto p-4 md:p-8">
+            <!-- Tab Navigation -->
+            <div class="mb-8">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
+                    <nav class="flex space-x-2" aria-label="Tabs">
+                        <button data-tab="tab-profile" class="tab-button active flex-1 py-3 px-4 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 transition-all duration-200">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Profile & Spotlight
+                        </button>
+                        <button data-tab="tab-theme" class="tab-button flex-1 py-3 px-4 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 transition-all duration-200">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                            </svg>
+                            Theme & Colors
+                        </button>
+                        <button data-tab="tab-links" class="tab-button flex-1 py-3 px-4 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 transition-all duration-200">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
+                            Manage Links
+                        </button>
+                    </nav>
+                </div>
             </div>
-        </div>
 
         <!-- Tab Content: Profile & Spotlight -->
-        <div id="tab-profile" class="tab-content active grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Profile Form -->
-            <form id="profile-form" class="form-section">
-                <h3 class="text-xl font-semibold text-gray-900">Profile</h3>
-                <div>
-                    <label for="profile-name">Name (e.g., @yourname)</label>
-                    <input type="text" id="profile-name" name="name" placeholder="@yourname">
-                </div>
-                <div>
-                    <label for="profile-bio">Bio</label>
-                    <textarea id="profile-bio" name="bio" rows="3" placeholder="Indie game developer..."></textarea>
-                </div>
-                <div>
-                    <label for="profile-pic-url">Profile Picture URL</label>
-                    <input type="url" id="profile-pic-url" name="profilePicUrl" placeholder="https://...">
-                </div>
-                <div>
-                    <label for="profile-links-heading">Links Section Heading</label>
-                    <input type="text" id="profile-links-heading" name="linksHeading" placeholder="My Games">
-                </div>
-                <button type="submit" class="btn-primary">Save Profile</button>
-            </form>
-            
-            <!-- Spotlight Form -->
-            <form id="spotlight-form" class="form-section">
-                <h3 class="text-xl font-semibold text-gray-900">Spotlight (Featured Content)</h3>
-                <p class="text-sm text-gray-500">To hide the spotlight section, just clear the "Title" field and save.</p>
-                <div>
-                    <label for="spotlight-heading">Heading (e.g., "Latest Game")</label>
-                    <input type="text" id="spotlight-heading" name="heading" placeholder="Latest Game">
-                </div>
-                <div>
-                    <label for="spotlight-title">Title</label>
-                    <input type="text" id="spotlight-title" name="title" placeholder="Pixel Jumper">
-                </div>
-                <div>
-                    <label for="spotlight-description">Description</label>
-                    <textarea id="spotlight-description" name="description" rows="2" placeholder="My new 2D platformer..."></textarea>
-                </div>
-                <div>
-                    <label for="spotlight-image-url">Image/GIF URL</label>
-                    <input type="url" id="spotlight-image-url" name="imageUrl" placeholder="https://...">
-                </div>
-                <div>
-                    <label for="spotlight-url">Link URL</label>
-                    <input type="url" id="spotlight-url" name="url" placeholder="https://...">
-                </div>
-                <div>
-                    <label for="spotlight-button-text">Button Text</label>
-                    <input type="text" id="spotlight-button-text" name="buttonText" placeholder="PLAY NOW!">
-                </div>
-                <button type="submit" class="btn-primary">Save Spotlight</button>
-            </form>
+        <div id="tab-profile" class="tab-content active">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <!-- Profile Form -->
+                <form id="profile-form" class="form-section">
+                    <div class="mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Profile Settings</h3>
+                        <p class="text-gray-600">Configure your public profile information that appears at the top of your page</p>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="profile-name" class="block text-sm font-bold text-gray-800 mb-2">
+                                <svg class="w-4 h-4 inline-block mr-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Display Name
+                            </label>
+                            <input type="text" id="profile-name" name="name" placeholder="e.g., @yourname or John Doe" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                            <p class="text-xs text-gray-500 mt-1.5">This appears as your main heading</p>
+                        </div>
+                        
+                        <div>
+                            <label for="profile-bio" class="block text-sm font-bold text-gray-800 mb-2">
+                                <svg class="w-4 h-4 inline-block mr-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+                                </svg>
+                                Bio / Tagline
+                            </label>
+                            <textarea id="profile-bio" name="bio" rows="3" placeholder="Tell visitors about yourself..." class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none"></textarea>
+                            <p class="text-xs text-gray-500 mt-1.5">A short description that appears under your name</p>
+                        </div>
+                        
+                        <div>
+                            <label for="profile-pic-url" class="block text-sm font-bold text-gray-800 mb-2">
+                                <svg class="w-4 h-4 inline-block mr-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Profile Picture URL
+                            </label>
+                            <input type="url" id="profile-pic-url" name="profilePicUrl" placeholder="https://example.com/your-photo.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                            <p class="text-xs text-gray-500 mt-1.5">Direct link to your profile image (jpg, png, or gif)</p>
+                        </div>
+                        
+                        <div>
+                            <label for="profile-links-heading" class="block text-sm font-bold text-gray-800 mb-2">
+                                <svg class="w-4 h-4 inline-block mr-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                </svg>
+                                Links Section Heading
+                            </label>
+                            <input type="text" id="profile-links-heading" name="linksHeading" placeholder="e.g., My Links, Check These Out, Connect With Me" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                            <p class="text-xs text-gray-500 mt-1.5">Heading text above your links section</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <button type="submit" class="btn-primary w-full py-3.5 text-base font-semibold">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Save Profile Settings
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Spotlight Form -->
+                <form id="spotlight-form" class="form-section">
+                    <div class="mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                            <svg class="w-6 h-6 inline-block mr-2 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            Spotlight (Featured Content)
+                        </h3>
+                        <p class="text-gray-600">Highlight your latest project, video, or important announcement</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                            <p class="text-sm text-amber-900 font-medium">
+                                Leave the <strong>title</strong> field empty to hide the entire spotlight section from your public page
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="spotlight-heading" class="block text-sm font-bold text-gray-800 mb-2">
+                                Section Heading
+                            </label>
+                            <input type="text" id="spotlight-heading" name="heading" placeholder="e.g., Latest Project, Now Playing, Featured" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all">
+                            <p class="text-xs text-gray-500 mt-1.5">Small text above the spotlight card</p>
+                        </div>
+                        
+                        <div>
+                            <label for="spotlight-title" class="block text-sm font-bold text-gray-800 mb-2">
+                                Title <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="spotlight-title" name="title" placeholder="e.g., My New Game: Pixel Jumper" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all">
+                            <p class="text-xs text-gray-500 mt-1.5">Main title of your featured content</p>
+                        </div>
+                        
+                        <div>
+                            <label for="spotlight-description" class="block text-sm font-bold text-gray-800 mb-2">
+                                Description
+                            </label>
+                            <textarea id="spotlight-description" name="description" rows="3" placeholder="A brief description of your featured content..." class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all resize-none"></textarea>
+                            <p class="text-xs text-gray-500 mt-1.5">Short description to entice visitors</p>
+                        </div>
+                        
+                        <div>
+                            <label for="spotlight-image-url" class="block text-sm font-bold text-gray-800 mb-2">
+                                Featured Image/GIF URL
+                            </label>
+                            <input type="url" id="spotlight-image-url" name="imageUrl" placeholder="https://example.com/featured-image.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all">
+                            <p class="text-xs text-gray-500 mt-1.5">Eye-catching visual for your spotlight</p>
+                        </div>
+                        
+                        <div>
+                            <label for="spotlight-url" class="block text-sm font-bold text-gray-800 mb-2">
+                                Link URL
+                            </label>
+                            <input type="url" id="spotlight-url" name="url" placeholder="https://example.com/your-project" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all">
+                            <p class="text-xs text-gray-500 mt-1.5">Where visitors go when they click</p>
+                        </div>
+                        
+                        <div>
+                            <label for="spotlight-button-text" class="block text-sm font-bold text-gray-800 mb-2">
+                                Call-to-Action Button Text
+                            </label>
+                            <input type="text" id="spotlight-button-text" name="buttonText" placeholder="e.g., PLAY NOW, WATCH VIDEO, LEARN MORE" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all">
+                            <p class="text-xs text-gray-500 mt-1.5">Action text on the button</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <button type="submit" class="btn-primary w-full py-3.5 text-base font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Save Spotlight Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <!-- Tab Content: Theme -->
         <div id="tab-theme" class="tab-content">
-            <form id="theme-form" class="form-section max-w-lg mx-auto">
-                <h3 class="text-xl font-semibold text-gray-900">Page Theme</h3>
-                <p class="text-sm text-gray-500">Enter CSS hex codes (e.g., `#ffffff`) or valid color names. Be careful!</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+                <!-- Left: Color Controls -->
+                <form id="theme-form" class="form-section">
+                    <h3>Page Theme & Colors</h3>
+                    <p>Customize the look and feel of your public page</p>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <p class="text-sm text-blue-800">
+                            <svg class="w-5 h-5 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                            Pick colors and see instant preview on the right
+                        </p>
+                    </div>
+                    
+                    <!-- Background Gradients Section -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Background Gradient
+                        </h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="color-input-group">
+                                <label for="theme-bg-from">Gradient Start</label>
+                                <input type="color" id="theme-bg-from" data-css-var="--bg-gradient-from" value="#e0e7ff" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                            <div class="color-input-group">
+                                <label for="theme-bg-via">Gradient Middle</label>
+                                <input type="color" id="theme-bg-via" data-css-var="--bg-gradient-via" value="#f3e8ff" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                            <div class="color-input-group">
+                                <label for="theme-bg-to">Gradient End</label>
+                                <input type="color" id="theme-bg-to" data-css-var="--bg-gradient-to" value="#fce7f3" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Colors Section -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Text Colors
+                        </h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="color-input-group">
+                                <label for="theme-text-primary">Primary Text (Headings)</label>
+                                <input type="color" id="theme-text-primary" data-css-var="--text-color-primary" value="#111827" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                            <div class="color-input-group">
+                                <label for="theme-text-secondary">Secondary Text (Body)</label>
+                                <input type="color" id="theme-text-secondary" data-css-var="--text-color-secondary" value="#4b5563" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                            <div class="color-input-group">
+                                <label for="theme-text-accent">Accent Text</label>
+                                <input type="color" id="theme-text-accent" data-css-var="--text-color-accent" value="#4f46e5" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Spotlight Button Colors Section -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                            </svg>
+                            Spotlight Button
+                        </h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="color-input-group">
+                                <label for="theme-spotlight-btn-bg">Button Background</label>
+                                <input type="color" id="theme-spotlight-btn-bg" data-css-var="--spotlight-button-bg" value="#22c55e" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                            <div class="color-input-group">
+                                <label for="theme-spotlight-btn-hover">Button Hover</label>
+                                <input type="color" id="theme-spotlight-btn-hover" data-css-var="--spotlight-button-hover-bg" value="#16a34a" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                            <div class="color-input-group">
+                                <label for="theme-spotlight-btn-text">Button Text</label>
+                                <input type="color" id="theme-spotlight-btn-text" data-css-var="--spotlight-button-text-color" value="#ffffff" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Link Card Colors Section -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
+                            Link Cards
+                        </h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="color-input-group">
+                                <label for="theme-link-card-bg">Card Background</label>
+                                <input type="color" id="theme-link-card-bg" data-css-var="--link-card-bg" value="#ffffff" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                            <div class="color-input-group">
+                                <label for="theme-link-card-hover-bg">Card Hover Background</label>
+                                <input type="color" id="theme-link-card-hover-bg" data-css-var="--link-card-hover-bg" value="#f9fafb" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                            <div class="color-input-group">
+                                <label for="theme-link-focus-ring">Focus Ring Color</label>
+                                <input type="color" id="theme-link-focus-ring" data-css-var="--link-focus-ring" value="#6366f1" class="w-full h-14 cursor-pointer rounded-lg border-2 border-gray-300">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary w-full">
+                        <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Save Theme Settings
+                    </button>
+                </form>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- This list can be expanded by adding more inputs with 'data-css-var' attributes -->
-                    <div>
-                        <label for="theme-bg-from">Background Gradient From</label>
-                        <input type="text" id="theme-bg-from" data-css-var="--bg-gradient-from" placeholder="#e0e7ff">
-                    </div>
-                    <div>
-                        <label for="theme-bg-via">Background Gradient Via</label>
-                        <input type="text" id="theme-bg-via" data-css-var="--bg-gradient-via" placeholder="#f3e8ff">
-                    </div>
-                    <div>
-                        <label for="theme-bg-to">Background Gradient To</label>
-                        <input type="text" id="theme-bg-to" data-css-var="--bg-gradient-to" placeholder="#fce7f3">
-                    </div>
-                    <div>
-                        <label for="theme-text-primary">Primary Text (Headings)</label>
-                        <input type="text" id="theme-text-primary" data-css-var="--text-color-primary" placeholder="#111827">
-                    </div>
-                    <div>
-                        <label for="theme-text-secondary">Secondary Text (Body)</label>
-                        <input type="text" id="theme-text-secondary" data-css-var="--text-color-secondary" placeholder="#4b5563">
-                    </div>
-                    <div>
-                        <label for="theme-text-accent">Accent Text (Headings)</label>
-                        <input type="text" id="theme-text-accent" data-css-var="--text-color-accent" placeholder="#4f46e5">
-                    </div>
-                    <div>
-                        <label for="theme-spotlight-btn-bg">Spotlight Button BG</label>
-                        <input type="text" id="theme-spotlight-btn-bg" data-css-var="--spotlight-button-bg" placeholder="#22c55e">
-                    </div>
-                    <div>
-                        <label for="theme-spotlight-btn-hover">Spotlight Button Hover BG</label>
-                        <input type="text" id="theme-spotlight-btn-hover" data-css-var="--spotlight-button-hover-bg" placeholder="#16a34a">
-                    </div>
-                    <div>
-                        <label for="theme-spotlight-btn-text">Spotlight Button Text</label>
-                        <input type="text" id="theme-spotlight-btn-text" data-css-var="--spotlight-button-text-color" placeholder="#ffffff">
-                    </div>
-                     <div>
-                        <label for="theme-link-card-bg">Link Card BG (use rgba for opacity)</label>
-                        <input type="text" id="theme-link-card-bg" data-css-var="--link-card-bg" placeholder="rgba(255, 255, 255, 0.7)">
-                    </div>
-                    <div>
-                        <label for="theme-link-card-hover-bg">Link Card Hover BG</label>
-                        <input type="text" id="theme-link-card-hover-bg" data-css-var="--link-card-hover-bg" placeholder="#ffffff">
-                    </div>
-                     <div>
-                        <label for="theme-link-focus-ring">Link Focus Ring</label>
-                        <input type="text" id="theme-link-focus-ring" data-css-var="--link-focus-ring" placeholder="#6366f1">
+                <!-- Right: Live Preview -->
+                <div class="form-section sticky top-24 h-fit">
+                    <h3 class="mb-4">Live Preview</h3>
+                    <div id="theme-preview" class="rounded-xl overflow-hidden shadow-2xl border-4 border-gray-200" style="min-height: 600px;">
+                        <!-- Preview will update in real-time -->
+                        <div id="preview-background" class="p-8 min-h-[600px] transition-all duration-300" style="background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 50%, #fce7f3 100%);">
+                            <!-- Profile Section -->
+                            <div class="text-center mb-8">
+                                <div class="w-24 h-24 rounded-full bg-white mx-auto mb-4 flex items-center justify-center text-4xl">
+                                    👤
+                                </div>
+                                <h1 id="preview-heading" class="text-3xl font-bold mb-2 transition-colors duration-300" style="color: #111827;">Your Name</h1>
+                                <p id="preview-bio" class="text-lg transition-colors duration-300" style="color: #4b5563;">Your bio goes here</p>
+                            </div>
+                            
+                            <!-- Spotlight Section -->
+                            <div class="bg-white bg-opacity-90 rounded-2xl p-6 mb-6 shadow-lg">
+                                <h2 class="text-xl font-bold mb-3" style="color: #111827;">✨ Featured Content</h2>
+                                <p class="mb-4" style="color: #4b5563;">Check out this amazing spotlight item!</p>
+                                <button id="preview-spotlight-btn" class="w-full py-3 px-6 rounded-lg font-semibold transition-all duration-300" 
+                                        style="background-color: #22c55e; color: #ffffff;">
+                                    View More
+                                </button>
+                            </div>
+                            
+                            <!-- Links Section -->
+                            <div class="space-y-3">
+                                <h3 id="preview-links-heading" class="text-xl font-bold mb-4 transition-colors duration-300" style="color: #111827;">My Links</h3>
+                                <a id="preview-link-1" href="#" class="block p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105" 
+                                   style="background-color: #ffffff; color: #111827; text-decoration: none;">
+                                    <div class="font-semibold">🔗 Example Link 1</div>
+                                </a>
+                                <a id="preview-link-2" href="#" class="block p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105" 
+                                   style="background-color: #ffffff; color: #111827; text-decoration: none;">
+                                    <div class="font-semibold">🎨 Example Link 2</div>
+                                </a>
+                                <a id="preview-link-3" href="#" class="block p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105" 
+                                   style="background-color: #ffffff; color: #111827; text-decoration: none;">
+                                    <div class="font-semibold">✨ Example Link 3</div>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <button type="submit" class="btn-primary mt-6">Save Theme</button>
-            </form>
+            </div>
         </div>
 
         <!-- Tab Content: Manage Links -->
-        <div id="tab-links" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Add/Edit Link Form -->
-            <form id="link-form" class="form-section lg:col-span-1">
-                <h3 class="text-xl font-semibold text-gray-900" id="link-form-title">Add New Link</h3>
-                <input type="hidden" id="link-id" name="id"> <!-- Used for editing -->
-                <div>
-                    <label for="link-title">Title</label>
-                    <input type="text" id="link-title" name="title" placeholder="My Portfolio" required>
+        <div id="tab-links" class="tab-content">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <!-- Add/Edit Link Form -->
+                <div class="xl:col-span-1">
+                    <form id="link-form" class="form-section sticky top-24">
+                        <div class="mb-6">
+                            <h3 id="link-form-title" class="text-2xl font-bold text-gray-900 mb-2">Add New Link</h3>
+                            <p class="text-gray-600">Create a new link card for your page</p>
+                        </div>
+                        
+                        <input type="hidden" id="link-id" name="id">
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label for="link-title" class="block text-sm font-bold text-gray-800 mb-2">
+                                    <svg class="w-4 h-4 inline-block mr-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                    </svg>
+                                    Link Title <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="link-title" name="title" placeholder="e.g., My Portfolio, YouTube Channel" required class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                                <p class="text-xs text-gray-500 mt-1.5">Main text displayed on the link card</p>
+                            </div>
+                            
+                            <div>
+                                <label for="link-description" class="block text-sm font-bold text-gray-800 mb-2">
+                                    Description
+                                </label>
+                                <textarea id="link-description" name="description" rows="2" placeholder="A short description (optional)" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none"></textarea>
+                                <p class="text-xs text-gray-500 mt-1.5">Optional subtitle or additional info</p>
+                            </div>
+                            
+                            <div>
+                                <label for="link-image-url" class="block text-sm font-bold text-gray-800 mb-2">
+                                    <svg class="w-4 h-4 inline-block mr-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    Thumbnail Image URL
+                                </label>
+                                <input type="url" id="link-image-url" name="imageUrl" placeholder="https://example.com/icon.jpg" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                                <p class="text-xs text-gray-500 mt-1.5">Optional icon or image for the link</p>
+                            </div>
+                            
+                            <div>
+                                <label for="link-url" class="block text-sm font-bold text-gray-800 mb-2">
+                                    <svg class="w-4 h-4 inline-block mr-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                    </svg>
+                                    Destination URL <span class="text-red-500">*</span>
+                                </label>
+                                <input type="url" id="link-url" name="url" placeholder="https://example.com" required class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                                <p class="text-xs text-gray-500 mt-1.5">Where this link will take visitors</p>
+                            </div>
+                            
+                            <div>
+                                <label for="link-order" class="block text-sm font-bold text-gray-800 mb-2">
+                                    <svg class="w-4 h-4 inline-block mr-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                                    </svg>
+                                    Display Order
+                                </label>
+                                <input type="number" id="link-order" name="order" placeholder="1" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                                <p class="text-xs text-gray-500 mt-1.5">Lower numbers appear first (1, 2, 3...)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-3 mt-8 pt-6 border-t border-gray-200">
+                            <button type="submit" class="btn-primary flex-1 py-3.5 font-semibold">
+                                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Save Link
+                            </button>
+                            <button type="button" id="link-form-cancel" class="btn-secondary hidden flex-1 py-3.5 font-semibold">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div>
-                    <label for="link-description">Description</label>
-                    <textarea id="link-description" name="description" rows="2" placeholder="Check out my work..."></textarea>
-                </div>
-                <div>
-                    <label for="link-image-url">Image URL</label>
-                    <input type="url" id="link-image-url" name="imageUrl" placeholder="https://...">
-                </div>
-                <div>
-                    <label for="link-url">Link URL</label>
-                    <input type="url" id="link-url" name="url" placeholder="https://..." required>
-                </div>
-                <div>
-                    <label for="link-order">Order (e.g., 1, 2, 3)</label>
-                    <input type="number" id="link-order" name="order" placeholder="1">
-                </div>
-                <div class="flex gap-4">
-                    <button type="submit" class="btn-primary">Save Link</button>
-                    <button type="button" id="link-form-cancel" class="btn-secondary hidden">Cancel</button>
-                </div>
-            </form>
 
-            <!-- Current Links List -->
-            <div class="lg:col-span-2 space-y-4">
-                 <h3 class="text-xl font-semibold text-gray-900">Current Links</h3>
-                 <div id="links-list" class="space-y-4">
-                    <p class="text-gray-500">Loading links...</p>
-                    <!-- Links will be dynamically added here -->
-                 </div>
+                <!-- Current Links List -->
+                <div class="xl:col-span-2">
+                    <div class="form-section">
+                        <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-200">
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-900 mb-2">Your Links</h3>
+                                <p class="text-sm text-gray-600">Click a link to edit • Drag to reorder • Delete to remove</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div class="text-base font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-full" id="link-count">
+                                    0 links
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="links-list" class="space-y-4">
+                            <div class="text-center py-16 text-gray-400">
+                                <svg class="w-20 h-20 mx-auto mb-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                </svg>
+                                <p class="text-lg font-medium text-gray-500 mb-1">No links yet</p>
+                                <p class="text-sm text-gray-400">Create your first link using the form on the left</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
     </div>
+</div>
 
     <!-- Firebase SDK Imports -->
     <script type="module">
@@ -278,6 +788,61 @@
         const logoutButton = document.getElementById('logout-button');
         const loginError = document.getElementById('login-error');
 
+        // --- Toast Notification System ---
+        function showToast(message, type = 'success') {
+            // Remove any existing toasts
+            const existingToast = document.querySelector('.toast-notification');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-notification fixed top-4 right-4 z-50 max-w-sm animate-slideIn ${type === 'success' ? 'alert-success' : 'alert-error'} alert shadow-lg`;
+            
+            const icon = type === 'success' 
+                ? '<svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
+                : '<svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>';
+            
+            toast.innerHTML = `
+                ${icon}
+                <div class="flex-1">
+                    <p class="font-semibold">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="ml-2 opacity-70 hover:opacity-100">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
+        }
+        
+        // Add animation styles
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            .animate-slideIn {
+                animation: slideIn 0.3s ease-out;
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
         // --- 1. Config Check & Initialization ---
 
         function initializeAppWithConfig(config) {
@@ -293,8 +858,13 @@
         }
 
         function showLoginError(message) {
-            loginError.textContent = message;
-            loginError.style.display = 'block';
+            loginError.className = 'alert alert-error';
+            loginError.innerHTML = `
+                <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <p class="flex-1">${message}</p>
+            `;
             loginButton.disabled = true;
             loginButton.classList.add('opacity-50', 'cursor-not-allowed');
         }
@@ -325,6 +895,9 @@
                     // Load all data
                     loadConfigData(user.uid);
                     loadLinksData(user.uid);
+                    
+                    // Setup live preview after a short delay to ensure DOM is ready
+                    setTimeout(() => setupLivePreview(), 100);
                 } else {
                     // User is signed out
                     currentUid = null;
@@ -332,6 +905,101 @@
                     adminDashboard.style.display = 'none';
                 }
             });
+        }
+
+        // --- Live Preview Update ---
+        function setupLivePreview() {
+            // Get all color inputs
+            const bgFrom = document.getElementById('theme-bg-from');
+            const bgVia = document.getElementById('theme-bg-via');
+            const bgTo = document.getElementById('theme-bg-to');
+            const textPrimary = document.getElementById('theme-text-primary');
+            const textSecondary = document.getElementById('theme-text-secondary');
+            const textAccent = document.getElementById('theme-text-accent');
+            const spotlightBg = document.getElementById('theme-spotlight-btn-bg');
+            const spotlightHover = document.getElementById('theme-spotlight-btn-hover');
+            const spotlightText = document.getElementById('theme-spotlight-btn-text');
+            const linkBg = document.getElementById('theme-link-card-bg');
+            const linkHoverBg = document.getElementById('theme-link-card-hover-bg');
+            const linkFocusRing = document.getElementById('theme-link-focus-ring');
+            
+            // Get preview elements
+            const previewBg = document.getElementById('preview-background');
+            const previewHeading = document.getElementById('preview-heading');
+            const previewBio = document.getElementById('preview-bio');
+            const previewLinksHeading = document.getElementById('preview-links-heading');
+            const previewSpotlightBtn = document.getElementById('preview-spotlight-btn');
+            const previewLinks = [
+                document.getElementById('preview-link-1'),
+                document.getElementById('preview-link-2'),
+                document.getElementById('preview-link-3')
+            ];
+            
+            // Update function
+            function updatePreview() {
+                // Update background gradient
+                if (bgFrom && bgVia && bgTo && previewBg) {
+                    previewBg.style.background = `linear-gradient(135deg, ${bgFrom.value} 0%, ${bgVia.value} 50%, ${bgTo.value} 100%)`;
+                }
+                
+                // Update text colors
+                if (textPrimary && previewHeading) {
+                    previewHeading.style.color = textPrimary.value;
+                    previewLinksHeading.style.color = textPrimary.value;
+                }
+                if (textSecondary && previewBio) {
+                    previewBio.style.color = textSecondary.value;
+                }
+                
+                // Update spotlight button
+                if (spotlightBg && spotlightText && previewSpotlightBtn) {
+                    previewSpotlightBtn.style.backgroundColor = spotlightBg.value;
+                    previewSpotlightBtn.style.color = spotlightText.value;
+                }
+                
+                // Update link cards
+                if (linkBg && previewLinks) {
+                    previewLinks.forEach(link => {
+                        if (link) {
+                            link.style.backgroundColor = linkBg.value;
+                            link.style.color = textPrimary.value;
+                        }
+                    });
+                }
+            }
+            
+            // Add event listeners to all color inputs
+            [bgFrom, bgVia, bgTo, textPrimary, textSecondary, textAccent, 
+             spotlightBg, spotlightHover, spotlightText, linkBg, linkHoverBg, linkFocusRing].forEach(input => {
+                if (input) {
+                    input.addEventListener('input', updatePreview);
+                }
+            });
+            
+            // Add hover effect for spotlight button
+            if (previewSpotlightBtn && spotlightHover) {
+                previewSpotlightBtn.addEventListener('mouseenter', () => {
+                    previewSpotlightBtn.style.backgroundColor = spotlightHover.value;
+                });
+                previewSpotlightBtn.addEventListener('mouseleave', () => {
+                    previewSpotlightBtn.style.backgroundColor = spotlightBg.value;
+                });
+            }
+            
+            // Add hover effect for link cards
+            previewLinks.forEach(link => {
+                if (link && linkHoverBg) {
+                    link.addEventListener('mouseenter', () => {
+                        link.style.backgroundColor = linkHoverBg.value;
+                    });
+                    link.addEventListener('mouseleave', () => {
+                        link.style.backgroundColor = linkBg.value;
+                    });
+                }
+            });
+            
+            // Initial update
+            updatePreview();
         }
 
         // --- 3. Data Loading ---
@@ -372,7 +1040,10 @@
                     if (data.theme) {
                         document.querySelectorAll('#theme-form input[data-css-var]').forEach(input => {
                             const varName = input.dataset.cssVar;
-                            input.value = data.theme[varName] || '';
+                            const value = data.theme[varName] || '';
+                            if (value) {
+                                input.value = value;
+                            }
                         });
                     }
                 } else {
@@ -383,30 +1054,64 @@
 
         // Load Links
         const linksListEl = document.getElementById('links-list');
+        const linkCountEl = document.getElementById('link-count');
+        
         function loadLinksData(uid) {
             const q = query(getLinksColRef(uid), orderBy("order", "asc"));
             onSnapshot(q, (snapshot) => {
                 linksListEl.innerHTML = '';
+                const linkCount = snapshot.size;
+                
+                // Update counter
+                linkCountEl.textContent = `${linkCount} link${linkCount !== 1 ? 's' : ''}`;
+                
                 if (snapshot.empty) {
-                    linksListEl.innerHTML = '<p class="text-gray-500">No links found. Add one using the form!</p>';
+                    linksListEl.innerHTML = `
+                        <div class="text-center py-12 text-gray-400">
+                            <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
+                            <p class="text-sm">No links yet. Add your first link!</p>
+                        </div>
+                    `;
                     return;
                 }
+                
                 snapshot.forEach(doc => {
                     const link = doc.data();
                     const linkId = doc.id;
                     const el = document.createElement('div');
-                    el.className = "flex items-center justify-between bg-white p-3 rounded-md shadow";
+                    el.className = "link-card";
                     el.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <img src="${link.imageUrl || 'https://placehold.co/64x64/eee/999?text=Img'}" alt="" class="w-10 h-10 rounded-md object-cover">
-                            <div>
-                                <p class="font-semibold text-gray-900">${link.title} <span class="text-sm text-gray-400">(${link.order || 'N/A'})</span></p>
-                                <p class="text-xs text-gray-500 truncate max-w-xs">${link.description || 'No description'}</p>
+                        <div class="flex items-center gap-4 flex-1 min-w-0">
+                            <img src="${link.imageUrl || 'https://placehold.co/80x80/e5e7eb/9ca3af?text=IMG'}" 
+                                 alt="${link.title}" 
+                                 onerror="this.src='https://placehold.co/80x80/e5e7eb/9ca3af?text=IMG'">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <p class="font-semibold text-gray-900 truncate">${link.title}</p>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        #${link.order || 0}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-500 truncate mt-0.5">${link.description || 'No description'}</p>
+                                <a href="${link.url}" target="_blank" class="text-xs text-indigo-600 hover:text-indigo-800 truncate block mt-1">
+                                    ${link.url}
+                                </a>
                             </div>
                         </div>
-                        <div class="flex gap-2">
-                            <button data-id="${linkId}" class="btn-edit text-sm font-medium text-indigo-600 hover:text-indigo-900">Edit</button>
-                            <button data-id="${linkId}" class="btn-delete btn-danger">Delete</button>
+                        <div class="flex gap-2 flex-shrink-0">
+                            <button data-id="${linkId}" class="btn-edit">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                Edit
+                            </button>
+                            <button data-id="${linkId}" class="btn-delete">
+                                <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
                     `;
                     linksListEl.appendChild(el);
@@ -427,10 +1132,10 @@
             const profileData = Object.fromEntries(formData.entries());
             try {
                 await setDoc(getConfigDocRef(currentUid), { profile: profileData }, { merge: true });
-                alert("Profile saved!");
+                showToast('Profile saved successfully!', 'success');
             } catch (e) {
                 console.error(e);
-                alert("Error saving profile.");
+                showToast('Error saving profile. Please try again.', 'error');
             }
         });
         
@@ -441,10 +1146,10 @@
             const spotlightData = Object.fromEntries(formData.entries());
             try {
                 await setDoc(getConfigDocRef(currentUid), { spotlight: spotlightData }, { merge: true });
-                alert("Spotlight saved!");
+                showToast('Spotlight saved successfully!', 'success');
             } catch (e) {
                 console.error(e);
-                alert("Error saving spotlight.");
+                showToast('Error saving spotlight. Please try again.', 'error');
             }
         });
 
@@ -459,10 +1164,10 @@
             });
             try {
                 await setDoc(getConfigDocRef(currentUid), { theme: themeData }, { merge: true });
-                alert("Theme saved!");
+                showToast('Theme settings saved successfully!', 'success');
             } catch (e) {
                 console.error(e);
-                alert("Error saving theme.");
+                showToast('Error saving theme. Please try again.', 'error');
             }
         });
 
@@ -489,16 +1194,16 @@
                     // Update existing link
                     const linkDocRef = doc(db, "users", currentUid, "links", linkId);
                     await updateDoc(linkDocRef, linkData);
-                    alert("Link updated!");
+                    showToast('Link updated successfully!', 'success');
                 } else {
                     // Add new link
                     await addDoc(getLinksColRef(currentUid), linkData);
-                    alert("Link added!");
+                    showToast('Link added successfully!', 'success');
                 }
                 resetLinkForm();
             } catch (e) {
                 console.error(e);
-                alert("Error saving link.");
+                showToast('Error saving link. Please try again.', 'error');
             }
         });
         
@@ -506,7 +1211,10 @@
             linkForm.reset();
             linkIdInput.value = '';
             linkFormTitle.textContent = "Add New Link";
-            cancelBtn.style.display = 'none';
+            linkFormTitle.nextElementSibling.textContent = "Create a new link card for your page";
+            cancelBtn.classList.add('hidden');
+            // Scroll to top of form
+            linkForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
         
         cancelBtn.addEventListener('click', resetLinkForm);
@@ -514,7 +1222,7 @@
         // --- 5. Data Deleting / Editing Prep ---
 
         async function handleEditLink(e) {
-            const linkId = e.target.dataset.id;
+            const linkId = e.target.closest('button').dataset.id;
             const linkDocRef = doc(db, "users", currentUid, "links", linkId);
             const docSnap = await getDoc(linkDocRef);
             if (!docSnap.exists()) return;
@@ -528,8 +1236,9 @@
             document.getElementById('link-order').value = link.order || 0;
 
             linkFormTitle.textContent = "Edit Link";
-            cancelBtn.style.display = 'block';
-            window.scrollTo(0, 0); // Scroll to top
+            linkFormTitle.nextElementSibling.textContent = "Update the link details below";
+            cancelBtn.classList.remove('hidden');
+            linkForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         
         async function handleDeleteLink(e) {
@@ -539,10 +1248,10 @@
             try {
                 const linkDocRef = doc(db, "users", currentUid, "links", linkId);
                 await deleteDoc(linkDocRef);
-                alert("Link deleted.");
+                showToast('Link deleted successfully.', 'success');
             } catch (e) {
                 console.error(e);
-                alert("Error deleting link.");
+                showToast('Error deleting link. Please try again.', 'error');
             }
         }
 
