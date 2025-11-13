@@ -2,9 +2,19 @@
 # These contain your personal Firebase credentials and should NOT be committed
 admin.html
 betterlinkshare.html
+generated/*
+!generated/README.md
 
 # Generated security rules with your email
 firestore.rules
+
+# Firebase config (auto-generated)
+.firebaserc
+
+# Development/Testing directories
+test/
+test2/
+todo
 
 # OS files
 .DS_Store
@@ -20,3 +30,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Node modules (if any)
+node_modules/

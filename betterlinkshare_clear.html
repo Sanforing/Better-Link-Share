@@ -154,7 +154,7 @@
         <!-- Footer -->
         <div class="text-center mt-8">
             <p class="text-xs" style="color: var(--text-color-secondary);">
-                Powered by <a href="https://github.com/your-repo/FlexiLink" target="_blank" rel="noopener noreferrer" class="font-semibold" style="color: var(--text-color-accent);">FlexiLink</a>
+                Powered by <a href="https://github.com/Sanforing/Better-Link-Share" target="_blank" rel="noopener noreferrer" class="font-semibold" style="color: var(--text-color-accent);">BetterLinkShare</a>
             </p>
         </div>
 
@@ -164,11 +164,10 @@
     <script type="module">
         // Import Firebase services
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, collection, query, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         //
-        // --- 🚀 SETUP GUIDE: HOW TO USE FLEXILINK 🚀 ---
+        // --- 🚀 SETUP GUIDE: HOW TO USE BETTERLINKSHARE 🚀 ---
         //
         // 1. Go to Firebase (firebase.google.com) and create a new project.
         // 2. In your project, go to "Project Settings" (click the ⚙️ icon).
@@ -405,21 +404,14 @@
             // 1. Initialize Firebase
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
-            const auth = getAuth(app);
             // setLogLevel('Debug'); // Uncomment for debugging
 
-            // 2. Sign In Anonymously
-            try {
-                await signInAnonymously(auth);
-                console.log("Signed in anonymously");
-            } catch (e) {
-                console.error("Error signing in anonymously:", e);
-                // We can still try to render public data
-            }
+            // 2. No authentication needed for public read-only page
+            console.log("Loading public link page...");
 
             // 3. Set up Real-time Listeners
             
-            // Listen to the main config document
+            // Listen to the main config document at global path
             const configDocRef = doc(db, "config", "page");
             onSnapshot(configDocRef, (docSnap) => {
                 if (docSnap.exists()) {

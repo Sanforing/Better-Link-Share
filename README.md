@@ -4,7 +4,9 @@
 
 An open-source, fully customizable, self‑hosted link‑in‑bio page. Free, no tiers, take full control of your profile.
 
-<sup>HTML + Tailwind (CDN) + Vanilla JS (ES Modules) + Firebase Firestore (+ optional Auth)</sup>
+<sup>HTML + Tailwind (CDN) + Vanilla JS (ES Modules) + Firebase Firestore</sup>
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 </div>
 
@@ -13,11 +15,11 @@ An open-source, fully customizable, self‑hosted link‑in‑bio page. Free, no
 ## Table of Contents
 1. [Features](#features)
 2. [Tech Stack](#tech-stack)
-3. [Quick Start (5 min)](#quick-start-5-min)
+3. [Quick Start](#quick-start)
 4. [File Structure](#file-structure)
 5. [Security Rules](#security-rules)
 6. [Customization](#customization)
-7. [Admin Panel (optional)](#admin-panel-optional)
+7. [Admin Panel](#admin-panel)
 8. [FAQ / Troubleshooting](#faq--troubleshooting)
 9. [Contributing](#contributing)
 10. [License](#license)
@@ -25,12 +27,15 @@ An open-source, fully customizable, self‑hosted link‑in‑bio page. Free, no
 ---
 
 ## Features
-- Free & Open Source – No paid tiers or locked features.
-- One-file deploy – Host the public page anywhere (Vercel, Netlify, GitHub Pages).
-- Rich link cards – Image, title, and description per link.
-- Spotlight section – Highlight your latest project/video/article.
-- Themeable – CSS variables for colors, gradients, and focus rings.
-- Realtime updates – Powered by Firestore.
+✨ **Free & Open Source** – No paid tiers or locked features  
+🚀 **One-file deploy** – Host anywhere (Vercel, Netlify, GitHub Pages)  
+🎨 **Rich link cards** – Image, title, and description per link  
+⭐ **Spotlight section** – Highlight your latest project/video/article  
+🎨 **Fully themeable** – Customize colors, gradients, and styles  
+⚡ **Realtime updates** – Changes reflect instantly via Firestore  
+🔒 **Secure** – Public reads, authenticated writes only  
+
+---
 
 ## Tech Stack
 | Layer | Tool |
@@ -38,204 +43,238 @@ An open-source, fully customizable, self‑hosted link‑in‑bio page. Free, no
 | Frontend | HTML5 + Tailwind CSS (CDN) + Vanilla JS (ES Modules) |
 | Backend (BaaS) | Firebase |
 | Database | Firestore |
-| Auth | Optional (Anonymous read or Google Auth depending on your rules) |
+| Auth | Google Sign-In for admin panel only (public page requires no auth) |
 
 ---
 
-## Quick Start (5 min)
+## Quick Start
 
-### 🚀 Automated Setup (Easiest)
+### 🚀 Automated Setup (Recommended)
 
-**For Linux/macOS/Git Bash:**
-```bash
-./setup.sh
-```
-
-**For Windows:**
+**Windows:**
 ```bash
 setup.bat
 ```
 
+**Linux/macOS/Git Bash:**
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
 The setup wizard will:
 1. ✅ Ask for your Firebase configuration
-2. ✅ Ask for your admin email
-3. ✅ Generate `admin.html` with your config
-4. ✅ Generate `betterlinkshare.html` with your config
-5. ✅ Generate `firestore.rules` with your email
+2. ✅ Ask for your admin email  
+3. ✅ Generate `generated/admin.html` with your config
+4. ✅ Generate `generated/betterlinkshare.html` with your config
+5. ✅ Generate `generated/firestore.rules` with your email
 
-Then follow the on-screen instructions to:
-- Copy `firestore.rules` to Firebase Console
-- Enable Google Authentication
-- Deploy your files
+All generated files will be in the `generated/` folder.
+
+Then:
+1. Deploy the security rules to Firebase Console
+2. Enable Google Authentication in Firebase
+3. Open `generated/admin.html` to configure your page
+4. Deploy `generated/betterlinkshare.html` to your hosting service
 
 ---
 
 ### 📝 Manual Setup
 
-If you prefer manual setup or the scripts don't work:
+<details>
+<summary>Click to expand manual setup instructions</summary>
 
 1) **Create a Firebase project**  
-   - Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Create a new project
 
-2) **Create a Firestore database**  
-   - Build → Firestore Database → Create database → Production mode.  
-   - Leave the Rules tab open for the next step.
+2) **Create Firestore database**  
+   - Build → Firestore Database → Create database → Production mode
 
-3) **⚠️ CRITICAL: Add security rules (multi-user with auth)**  
-   Paste the following rules into Firestore → Rules and **Publish**:
+3) **Add security rules**  
+   Go to Firestore → Rules and paste:
 
    ```javascript
    rules_version = '2';
    service cloud.firestore {
      match /databases/{database}/documents {
-       // Users can only read/write their own data
-       match /users/{userId}/{document=**} {
-         allow read, write: if request.auth != null && request.auth.uid == userId;
-       }
-       
-       // Allow anyone to read public pages (for your public-facing page)
-       // But only the owner can write
-       match /users/{userId}/config/page {
-         allow read: if true;  // Anyone can view public profiles
-         allow write: if request.auth != null && request.auth.uid == userId;
-       }
-       
-       match /users/{userId}/links/{linkId} {
-         allow read: if true;  // Anyone can view public links
-         allow write: if request.auth != null && request.auth.uid == userId;
+       match /{document=**} {
+         // ✅ Public can read
+         allow read: if true;
+         
+         // ✅ Only YOUR email can write
+         allow write: if request.auth != null 
+                      && request.auth.token.email == "your-email@gmail.com";
        }
      }
    }
    ```
 
-   **This ensures each user can ONLY edit their own data!** 🔒
+   **Replace `your-email@gmail.com` with your Google account!**
 
 4) **Enable Google Authentication**  
-   - Authentication → Get started → Sign-in method → Enable Google
+   - Authentication → Sign-in method → Enable Google
 
-5) **Register a Web App and get your firebaseConfig**  
-   - Project Settings → Your apps → Web (</>) → Register app → copy the `firebaseConfig` object.
+5) **Register Web App**  
+   - Project Settings → Your apps → Web (</>) → Register app
+   - Copy the `firebaseConfig` object
 
-6) **Set up admin panel**  
-   - Open `admin_clear.html` (or `admin.html` if you already have config)
-   - Paste your `firebaseConfig` in the designated section
-   - Open in browser and sign in with Google
-   - Your Google account UID will be used to store YOUR data in `users/{your-uid}/...`
+6) **Set up files**  
+   - Copy `admin_clear.html` and `betterlinkshare_clear.html`
+   - Paste your `firebaseConfig` in both files
 
-7) **Configure and publish your content**  
-   - Use the admin panel to set up Profile, Spotlight, Theme, and Links
-   - All changes save to `users/{your-uid}/config/page` and `users/{your-uid}/links`
+7) **Configure your page**  
+   - Open `admin.html` in browser
+   - Sign in with your Google account
+   - Add your profile, links, and customize theme
 
-8) **Deploy your public page**  
-   - Open `betterlinkshare_clear.html`
-   - Update the Firebase config
-   - Change the code to read from `users/{YOUR_UID}/...` instead of root collections
-   - Deploy to any static host (Vercel, Netlify, GitHub Pages)
-
-📖 **See [FIREBASE_SECURITY_SETUP.md](./FIREBASE_SECURITY_SETUP.md) for detailed security configuration!**
-
----
-
-### Legacy Single-User Setup (Not Recommended)
-
-<details>
-<summary>Click to expand legacy setup instructions</summary>
-
-If you want a simple single-user setup without authentication:
-
-3) Add security rules (public reads)  
-Paste the following rules into Firestore → Rules and Publish:
-
-```rules
-rules_version = '2';
-service cloud.firestore {
-	match /databases/{database}/documents {
-		// Public read for the single-tenant variant
-		match /config/page {
-			allow read: if true;
-		}
-		match /links/{linkId} {
-			allow read: if true;
-		}
-		// No writes from the public site
-		allow write: if false;
-	}
-}
-```
-
-**Note:** This setup doesn't support the admin panel. You'll need to manually edit Firestore data.
+8) **Deploy**  
+   - Upload `betterlinkshare.html` to your hosting service
+   - Done! 🎉
 
 </details>
 
 ---
 
 ## File Structure
-```text
-betterlinkshare_clear.html  # Public, single-tenant page (deploy this)
-admin_clear.html            # Optional admin (see notes below)
-LICENSE
-README.md
+```
+Better-Link-Share/
+├── admin_clear.html           # Admin panel template (no config)
+├── betterlinkshare_clear.html # Public page template (no config)
+├── setup.bat                  # Windows setup script
+├── setup.sh                   # Linux/macOS setup script
+├── generated/                 # Generated files folder
+│   ├── README.md              # Instructions
+│   ├── admin.html             # Your admin panel
+│   ├── betterlinkshare.html   # Your public page
+│   └── firestore.rules        # Your security rules
+├── LICENSE
+├── README.md
+└── FIREBASE_SECURITY_SETUP.md
 ```
 
 ---
 
 ## Security Rules
-The included public page reads from root collections `config/page` and `links`. Keep writes disabled for public users. If you later add an authenticated admin, scope write access accordingly.
 
-See the sample rules in [Quick Start](#quick-start-5-min).
+The public page reads from `config/page` and `links` collections. Anyone can read your public content, but only your authenticated Google account can write/edit.
+
+This ensures:
+- ✅ Your page is publicly accessible
+- ✅ Only you can make changes
+- ✅ No unauthorized edits
+
+See the auto-generated `generated/firestore.rules` or the manual setup section above.
 
 ---
 
 ## Customization
-Adjust CSS variables (theme colors, gradients, focus rings) by writing values into the `theme` map in Firestore. Fields starting with `--` map directly to CSS variables, for example:
+
+Use the admin panel's **Theme & Colors** tab to customize:
+- Background gradients
+- Text colors
+- Link card styles
+- Spotlight button colors
+- Focus rings and hover effects
+
+All changes are stored in Firestore and applied in realtime!
+
+### Available CSS Variables:
 - `--bg-gradient-from`, `--bg-gradient-via`, `--bg-gradient-to`
 - `--text-color-primary`, `--text-color-secondary`, `--text-color-accent`
 - `--link-card-bg`, `--link-card-hover-bg`, `--link-focus-ring`
 - `--spotlight-button-bg`, `--spotlight-button-hover-bg`, `--spotlight-button-text-color`
 
-You can also change copy and images from the `profile`, `links`, and `spotlight` fields.
-
 ---
 
-## Admin Panel (optional)
-This repo includes `admin_clear.html`, an experimental admin built with Google Sign-In that saves under a namespaced schema: `users/{uid}/config/page` and `users/{uid}/links`.
+## Admin Panel
 
-Important:
-- The default public page (`betterlinkshare_clear.html`) reads from root `config/page` and `links`. It does NOT read from `users/{uid}`.  
-- If you want to use the admin as-is, you’ll need a matching public page that reads from `users/{uid}` (not included), or adapt either file so they use the same paths.  
-- For the single-tenant demo, the simplest workflow is to edit data directly in the Firebase Console as described above.
+The admin panel provides a user-friendly interface to manage your content:
 
-Auth: The public page doesn’t require auth for reads if your rules allow it. The admin uses Google Auth for writes.
+### Features:
+📝 **Profile & Spotlight**
+- Set name, bio, and avatar
+- Configure featured content
+- Add custom headings
+
+🎨 **Theme & Colors**
+- Live preview of all changes
+- Customize every color
+- Gradient backgrounds
+
+🔗 **Manage Links**
+- Add, edit, delete links
+- Drag to reorder
+- Rich cards with images
+
+### Authentication:
+- Uses Google Sign-In
+- Only your email (specified in Firestore rules) can access
+- Public page requires NO authentication
 
 ---
 
 ## FAQ / Troubleshooting
-- The page shows placeholders only  
-	Ensure `firebaseConfig` is pasted into `betterlinkshare_clear.html` and your Firestore rules allow reads. Verify data exists at `config/page` and `links`.
-- Do I need to enable Anonymous Auth?  
-	No. The page attempts anonymous sign-in but will still work with public-read rules.
-- I want ordered links  
-	Add a numeric `order` field to each link and sort in the query (see code comments for `orderBy`).
-- Images don’t load  
-	Check `imageUrl` and CORS. A placeholder image is used as a fallback.
+
+**Q: The page shows placeholders only**  
+A: Ensure your `firebaseConfig` is correct and Firestore rules allow public reads. Check that data exists at `config/page` and `links` collections.
+
+**Q: Do I need to enable Anonymous Auth?**  
+A: No. The public page requires no authentication. Only the admin panel uses Google Sign-In.
+
+**Q: How do I order my links?**  
+A: Links have an `order` field. The admin panel handles this automatically. Lower numbers appear first.
+
+**Q: Images don't load**  
+A: Check the `imageUrl` field is a valid, publicly accessible URL. CORS issues may prevent some images from loading. A placeholder is shown as fallback.
+
+**Q: Can I self-host without Firebase?**  
+A: The current version requires Firebase Firestore. You could fork and adapt to use a different backend.
+
+**Q: How do I update my deployed page?**  
+A: Just make changes in the admin panel. The public page reads from Firestore in realtime, so updates appear instantly without redeploying!
 
 ---
 
 ## Contributing
-Issues and PRs are welcome:
-1. Fork the repo
-2. Create a branch: `feature/your-change`
-3. Open a PR describing the motivation and changes
-4. Keep the footprint small and framework-free
 
-Good first issues: accessibility (a11y), dark mode, small unit tests.
+Contributions are welcome! 🎉
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+### Guidelines:
+- Keep it simple and framework-free
+- Maintain the single-file philosophy
+- Add comments for complex logic
+- Test your changes
+
+**Good first issues:** accessibility (a11y), dark mode toggle, export/import functionality
 
 ---
 
 ## License
-MIT License — see `LICENSE`.
+
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-If this project helps you, a ⭐ on the repo is appreciated!
+## Support
 
+If this project helps you, consider:
+- ⭐ Starring the repository
+- 🐛 Reporting bugs or requesting features via [Issues](https://github.com/Sanforing/Better-Link-Share/issues)
+- 🔀 Contributing improvements via Pull Requests
+
+---
+
+<div align="center">
+
+Made with ❤️ for the open-source community
+
+[Report Bug](https://github.com/Sanforing/Better-Link-Share/issues) · [Request Feature](https://github.com/Sanforing/Better-Link-Share/issues)
+
+</div>

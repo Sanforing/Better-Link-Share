@@ -18,11 +18,14 @@ fi
 echo "This script will:"
 echo "  1. Configure your Firebase settings"
 echo "  2. Set your admin email for security"
-echo "  3. Generate admin.html and betterlinkshare.html"
+echo "  3. Generate admin.html and betterlinkshare.html in 'generated' folder"
 echo "  4. Generate firestore.rules with your email"
 echo ""
 read -p "Press Enter to continue..."
 echo ""
+
+# Create generated folder if it doesn't exist
+mkdir -p generated
 
 # ===== Step 1: Firebase Config =====
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -59,8 +62,8 @@ echo "Generating your files..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # ===== Generate admin.html =====
-echo "📝 Creating admin.html..."
-cp admin_clear.html admin.html
+echo "📝 Creating generated/admin.html..."
+cp admin_clear.html generated/admin.html
 
 # Replace Firebase config in admin.html
 # The template has commented config, so we need to replace the entire firebaseConfig object
@@ -68,7 +71,7 @@ sed -i '/const firebaseConfig = {/,/};/{
     /const firebaseConfig = {/!{
         /};/!d
     }
-}' admin.html
+}' generated/admin.html
 
 # Insert the actual config
 sed -i "/const firebaseConfig = {/a\\
@@ -77,18 +80,18 @@ sed -i "/const firebaseConfig = {/a\\
             projectId: \"$FIREBASE_PROJECT_ID\",\\
             storageBucket: \"$FIREBASE_STORAGE_BUCKET\",\\
             messagingSenderId: \"$FIREBASE_MESSAGING_SENDER_ID\",\\
-            appId: \"$FIREBASE_APP_ID\"" admin.html
+            appId: \"$FIREBASE_APP_ID\"" generated/admin.html
 
 # ===== Generate betterlinkshare.html =====
-echo "📝 Creating betterlinkshare.html..."
-cp betterlinkshare_clear.html betterlinkshare.html
+echo "📝 Creating generated/betterlinkshare.html..."
+cp betterlinkshare_clear.html generated/betterlinkshare.html
 
 # Replace Firebase config in betterlinkshare.html
 sed -i '/const firebaseConfig = {/,/};/{
     /const firebaseConfig = {/!{
         /};/!d
     }
-}' betterlinkshare.html
+}' generated/betterlinkshare.html
 
 sed -i "/const firebaseConfig = {/a\\
             apiKey: \"$FIREBASE_API_KEY\",\\
@@ -96,11 +99,11 @@ sed -i "/const firebaseConfig = {/a\\
             projectId: \"$FIREBASE_PROJECT_ID\",\\
             storageBucket: \"$FIREBASE_STORAGE_BUCKET\",\\
             messagingSenderId: \"$FIREBASE_MESSAGING_SENDER_ID\",\\
-            appId: \"$FIREBASE_APP_ID\"" betterlinkshare.html
+            appId: \"$FIREBASE_APP_ID\"" generated/betterlinkshare.html
 
 # ===== Generate firestore.rules =====
-echo "📝 Creating firestore.rules with your email..."
-cat > firestore.rules << EOF
+echo "📝 Creating generated/firestore.rules with your email..."
+cat > generated/firestore.rules << EOF
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -121,17 +124,17 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "✅ Setup Complete!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "Generated files:"
-echo "  ✓ admin.html (with your Firebase config)"
-echo "  ✓ betterlinkshare.html (with your Firebase config)"
-echo "  ✓ firestore.rules (with your email: $ADMIN_EMAIL)"
+echo "Generated files in 'generated' folder:"
+echo "  ✓ generated/admin.html (with your Firebase config)"
+echo "  ✓ generated/betterlinkshare.html (with your Firebase config)"
+echo "  ✓ generated/firestore.rules (with your email: $ADMIN_EMAIL)"
 echo ""
 echo "Next steps:"
 echo ""
 echo "1. 🔐 Set up Firestore Security Rules:"
 echo "   → Go to: https://console.firebase.google.com/"
 echo "   → Your Project → Firestore Database → Rules"
-echo "   → Copy content from 'firestore.rules' and paste"
+echo "   → Copy content from 'generated/firestore.rules' and paste"
 echo "   → Click 'Publish'"
 echo ""
 echo "2. 🔑 Enable Google Authentication:"
@@ -139,8 +142,8 @@ echo "   → Firebase Console → Authentication → Sign-in method"
 echo "   → Enable 'Google' provider"
 echo ""
 echo "3. 🚀 Deploy your files:"
-echo "   → Open admin.html in browser to configure your page"
-echo "   → Deploy betterlinkshare.html as your public page"
+echo "   → Open generated/admin.html in browser to configure your page"
+echo "   → Deploy generated/betterlinkshare.html as your public page"
 echo ""
 echo "📚 For detailed instructions, see:"
 echo "   → README.md"
